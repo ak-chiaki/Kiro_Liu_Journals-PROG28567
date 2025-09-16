@@ -119,4 +119,11 @@ public class Player : MonoBehaviour
         transform.position = newpos;    
 
     }
+
+    public void DetectAsteroids(float inMaxRange, List<Transform> inAsteroids)
+    {
+
+
+
+    }
 }

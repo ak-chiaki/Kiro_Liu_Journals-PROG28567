@@ -5,7 +5,6 @@ using static UnityEngine.GraphicsBuffer;
 
 public class Moon : MonoBehaviour
 {
-
     public Transform planetTransform;
     private float angleDeg;
     public float radius = 1f;

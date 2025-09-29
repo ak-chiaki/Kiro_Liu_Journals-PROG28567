@@ -207,12 +207,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   asteroidTransforms: []
-  enemyTransform: {fileID: 0}
+  enemyTransform: {fileID: 1441953408}
   bombPrefab: {fileID: 0}
   bombsTransform: {fileID: 0}
   maxSpeed: 5
   accelerationTime: 2
   deTime: 2
+  powerupPrefab: {fileID: 1567431237259788, guid: 03444c0c59102ba46bb1a8b5a1b0a810, type: 3}
+  powerUpRadius: 1
+  powerUpNumbers: 1
   radarRadius: 5
   numberOfPoints: 5
 --- !u!1001 &278059573
@@ -542,7 +545,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   angles: []
-  radius: 1
+  radius: 0.1
   center: {x: 0, y: 0, z: 0}
   lineDuration: 1
 --- !u!4 &1133757518

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.UIElements;
-
 public class Player : MonoBehaviour
 {
     public List<Transform> asteroidTransforms;
@@ -18,19 +17,33 @@ public class Player : MonoBehaviour
     public float accelerationTime = 5.0f;
     public float deTime = 2.0f;
 
-    public float explosionRadius = 2.0f;      
+    public float explosionRadius = 1.0f;      
     public float intensity = 10.0f;      
     public float velocityDecrease = 2.0f;
-    public float explodeCD = 0.3f;
+    public float explodeCD = 5f;
     private Vector3 knockbackVelocity;
-    private float lastExplodeTime = 10f;
+    private float lastExplodeTime = 0f;
 
     private Vector3 velocity;
-
+    public float beta = 3.0f;
 
     void Update()
     {
         PlayerMovement();
+        CheckExplosion();
+        
+
+        transform.position += (velocity + knockbackVelocity) * Time.deltaTime;
+
+        if (knockbackVelocity.sqrMagnitude > 0f) 
+        {
+    
+            knockbackVelocity = Vector3.Lerp(knockbackVelocity, Vector3.zero, beta * Time.deltaTime);
+        }
+        else
+        {
+            knockbackVelocity = Vector3.zero;
+        }
 
 
     }
@@ -40,13 +53,21 @@ public class Player : MonoBehaviour
         float acceleration = maxSpeed / accelerationTime;
 
         if (Input.GetKey(KeyCode.LeftArrow))
+        {
             velocity += Vector3.left * acceleration * Time.deltaTime;
+        }
         if (Input.GetKey(KeyCode.RightArrow))
+        {
             velocity += Vector3.right * acceleration * Time.deltaTime;
+        }
         if (Input.GetKey(KeyCode.UpArrow))
+        {
             velocity += Vector3.up * acceleration * Time.deltaTime;
+        }
         if (Input.GetKey(KeyCode.DownArrow))
-            velocity += Vector3.down * acceleration * Time.deltaTime;
+        { 
+        velocity += Vector3.down * acceleration * Time.deltaTime;
+        }
 
         if (!Input.GetKey(KeyCode.LeftArrow) && !Input.GetKey(KeyCode.RightArrow) && !Input.GetKey(KeyCode.UpArrow) && !Input.GetKey(KeyCode.DownArrow))
         {
@@ -75,7 +96,6 @@ public class Player : MonoBehaviour
 
         velocity = Vector3.ClampMagnitude(velocity, maxSpeed);
 
-        transform.position += velocity * Time.deltaTime;
 
         Debug.Log(velocity);
 
@@ -85,27 +105,55 @@ public class Player : MonoBehaviour
     {
         if (asteroidTransforms == null || asteroidTransforms.Count == 0) return; // check if it is not null
 
-        if (Time.deltaTime - lastExplodeTime < explodeCD) return; //check the CD to avoid trigger many times in a same time
+        if (Time.time - lastExplodeTime < explodeCD) return; //check the CD to avoid trigger many times in a same time
 
         Vector2 myPos = transform.position;
 
         for (int i = 0; i < asteroidTransforms.Count; i++)
         {
             Transform ast = asteroidTransforms[i];
-            if (ast == null)
+            if (ast != null)
             {
                 Vector2 astPos = ast.position;
 
-                if ((astPos - myPos).sqrMagnitude <= explosionRadius) //check if the distance of player and ast smaller than the required rad
+                if ((astPos - myPos).magnitude <= explosionRadius) //check if the distance of player and ast smaller than the required rad
                 {
-                 
+                    
                     lastExplodeTime = Time.time;
+
+                    Boom(astPos);
+                    DestroyAsteroid(ast);
+
                     break;
                 }
             }
 
            
         }
+    }
+
+    private void Boom(Vector2 explosionCenter)
+    {
+        int boomIndex = UnityEngine.Random.Range(1, 5);
+        Vector3 dir = Vector3.zero;
+
+        if (boomIndex == 1) dir = Vector3.left;
+        if (boomIndex == 2) dir = Vector3.right;
+        if (boomIndex == 3) dir = Vector3.up;
+        if (boomIndex == 4) dir = Vector3.down;
+
+       
+        knockbackVelocity += dir.normalized * intensity;
+
+
+    }
+    private void DestroyAsteroid(Transform t)
+    {
+        if (t == null) return;
+
+        asteroidTransforms.Remove(t);
+
+        Destroy(t.gameObject);
     }
 
 

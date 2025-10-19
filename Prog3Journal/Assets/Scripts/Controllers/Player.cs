@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static UnityEditor.PlayerSettings;
 public class Player : MonoBehaviour
 {
     public List<Transform> asteroidTransforms;
@@ -27,11 +28,21 @@ public class Player : MonoBehaviour
     private Vector3 velocity;
     public float beta = 3.0f;
 
+    [Header("Rotate")]
+    public float angleSpeedDeg = 180f; 
+
+    [Header("Flare")]
+    public FlareControl flarePrefab;     
+
+    public float flareSpeed = 5f; 
+   
+
+
     void Update()
     {
         PlayerMovement();
         CheckExplosion();
-        
+        PlayerRotation();
 
         transform.position += (velocity + knockbackVelocity) * Time.deltaTime;
 
@@ -156,6 +167,32 @@ public class Player : MonoBehaviour
         Destroy(t.gameObject);
     }
 
+    private void PlayerRotation()
+    {
+        float z = 0f;
+        if (Input.GetKey(KeyCode.A)) 
+            z += 1f;
+        if (Input.GetKey(KeyCode.D))
+            z -= 1f;
+        transform.Rotate(0, 0, z * angleSpeedDeg * Time.deltaTime);
 
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            TryShoot();
+        }
+    }
+
+    private void TryShoot()
+    {
+
+        Vector2 dir = (Vector2)transform.up.normalized; 
+        FlareControl flare = Instantiate(flarePrefab, transform.position, Quaternion.identity);
+        flare.Init(dir, asteroidTransforms);
+    }
+
+
+
+   
 
 }
+

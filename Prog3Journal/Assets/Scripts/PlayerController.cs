@@ -15,6 +15,18 @@ public class PlayerController : MonoBehaviour
 
     private FacingDirection currentFacingDirection = FacingDirection.right;
 
+    [Header("Jump Settings")]
+    public float apexHeight = 4.0f; 
+    public float apexTime = 0.5f;   
+    private float gravity;           
+    private float initialJumpVelocity; 
+    private bool inputJump = false;
+
+    public float terminalSpeed = 10f;
+
+    public float coyoteTime = 0.5f; 
+    private float coyoteTimeCounter; 
+
     public enum FacingDirection
     {
         left, right
@@ -27,7 +39,19 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        
+        rb.gravityScale = 0f;
+
+        gravity = -2 * apexHeight / (apexTime * apexTime);
+        initialJumpVelocity = 2 * apexHeight / apexTime;
+
+        PhysicsMaterial2D noFrictionMat = new PhysicsMaterial2D();
+        noFrictionMat.friction = 0f;      
+        noFrictionMat.bounciness = 0f;   
+
+        if (GetComponent<Collider2D>() != null)
+        {
+            GetComponent<Collider2D>().sharedMaterial = noFrictionMat;
+        }
     }
 
     void Update()
@@ -45,33 +69,61 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.RightArrow) && inputX == 1)
             inputX = 0;
 
-        Vector2 playerInput = new Vector2(inputX, 0f);
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            inputJump = true;
+        }
+
+        Vector2 playerInput = new Vector2(inputX, inputJump ? 1f : 0f);
         MovementUpdate(playerInput);
-        Debug.Log(IsGrounded());
+
+        inputJump = false;
+
     }
 
     private void MovementUpdate(Vector2 playerInput)
     {
-
         Vector2 velocity = rb.velocity;
 
-        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.RightArrow))
+        if (IsGrounded())
         {
-         
-            if (playerInput.x < 0)
-                velocity.x -= acceleration * Time.deltaTime;
-
-            
-            else if (playerInput.x > 0)
-                velocity.x += acceleration * Time.deltaTime;
+            coyoteTimeCounter = coyoteTime;
+        }
+        else
+        {
+            coyoteTimeCounter -= Time.deltaTime;
         }
 
-        else
+        velocity.y += gravity * Time.deltaTime;
+
+        if (velocity.y < -terminalSpeed)
+        {
+            velocity.y = -terminalSpeed; 
+        }
+
+        if (playerInput.y > 0 && coyoteTimeCounter > 0)
+        {
+            velocity.y = initialJumpVelocity;
+            coyoteTimeCounter = 0;
+        }
+
+        if (playerInput.x != 0)
+        {
+            if (playerInput.x < 0)
+            {
+                velocity.x -= acceleration * Time.deltaTime;
+            }
+            else if (playerInput.x > 0)
+            {
+                velocity.x += acceleration * Time.deltaTime;
+            }
+        }
+        else 
         {
             if (velocity.x > 0)
             {
                 velocity.x -= deceleration * Time.deltaTime;
-                if (velocity.x < 0) velocity.x = 0; 
+                if (velocity.x < 0) velocity.x = 0;
             }
             else if (velocity.x < 0)
             {
@@ -96,6 +148,7 @@ public class PlayerController : MonoBehaviour
         {
             currentFacingDirection = FacingDirection.left;
         }
+
 
     }
 
